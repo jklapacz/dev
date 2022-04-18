@@ -1,26 +1,54 @@
 #!/usr/bin/env bash
 
+_prompt="`tput bold``tput setaf 171`"
+_cmd_s=`tput setaf 123`
+_out_s=`tput setaf 250`
+_cmd_e=`tput sgr0`
+_r=`tput sgr0`
+RED="\e[31m"
+GREEN="\e[32m"
+ENDCOLOR="\e[0m"
+
+function _cmd() {
+	echo -e "${_cmd_s}# ${@} ${_cmd_e}"
+}
+
+function _out() {
+	echo -e "${_out_s}${@} ${_cmd_e}"
+}
+
+function welcome() {
+	message=(
+		"${_prompt}Let's walk you through your OS/developer environment setup"
+		"Please follow along in another terminal to ensure everything goes smoothly"
+		"NOTE: '#' means a command you should run in another terminal"
+		"	Light gray output is the expected output of the command if relevant${_r}"
+	)
+	printf '%s\n' "${message[@]}"
+}
+
 function install-00-prereqs() {
 	message=(
+		"${_prompt}"
 		"first xcode-developer tools need to be installed:"
-		""
-		'$ xcode-select --install'
-		""
+		"${_r}"
+		"$(_cmd xcode-select --install)"
 	)
 	printf '%s\n' "${message[@]}"
 
 	message=(
+		"${_prompt}"
 		"brew must be installed"
 		"use the following command to install brew:"
-		""
-		'$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)'
-		""
+		"${_r}"
+		"$(_cmd /bin/bash -c \"\$\(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh\)\")"
+		"${_prompt}"
 		"verify your brew installation:"
-		""
-		'$ brew --version'
-		"Homebrew 3.4.6"
-		'Homebrew/homebrew-core (git revision 31925014726; last commit 2022-04-16)'
-		'Homebrew/homebrew-cask (git revision 7928ab0cdb; last commit 2022-04-16)'
+		"${_r}"
+		"$(_cmd brew --version)"
+		"$(_out 'Homebrew 3.4.6')"
+		"$(_out 'Homebrew/homebrew-core (git revision 31925014726; last commit 2022-04-16)')"
+		"$(_out 'Homebrew/homebrew-cask (git revision 7928ab0cdb; last commit 2022-04-16)')"
 		""
 	)
 
@@ -29,15 +57,16 @@ function install-00-prereqs() {
 
 function install-01-python-build-dependencies() {
 	message=(
+		"${_prompt}"
 		"additionally, you must install the python build dependencies"
 		"NOTE: this should happen in your Apple Silicon environment"
 		"test this is the case by running the following"
+		"${_r}"
+		"$(_cmd arch)"
+		"$(_out arm64)"
 		""
-		'$ arch'
-		"arm64"
-		""
-		'$ brew install libpq --build-from-source'
-		'$ brew install openssl readline sqlite3 xz zlib'
+		"$(_cmd brew install libpq --build-from-source)"
+		"$(_cmd brew install openssl readline sqlite3 xz zlib)"
 	)
 	printf '%s\n' "${message[@]}"
 	
@@ -49,14 +78,10 @@ function install-01-python-build-dependencies() {
 	LPQPATH="${LIBPQ}/bin"
 
 	message=(
-		""
+		"${_prompt}"
 		"we need to setup the correct environment to build some python packages eventually"
-		""
-		"$ cat >> ~/.zshenv "
-		"export LDFLAGS=\"${LDFLAGS}\""
-		"export CPPFLAGS=\"${CPPFLAGS}\""
-		"export PATH=\"\$PATH:${LPQPATH}\""
-		""
+		"${_r}"
+		"$(_cmd "cat >> ~/.zshenv \nexport LDFLAGS=\"${LDFLAGS}\"\nexport CPPFLAGS=\"${CPPFLAGS}\"\nexport PATH=\"\$PATH:${LPQPATH}\"")"
 	)
 
 	printf '%s\n' "${message[@]}"
@@ -64,42 +89,41 @@ function install-01-python-build-dependencies() {
 
 function install-02-pyenv-install(){
 	message=(
+		"${_prompt}"
 		'now by default (assuming a clean OSX environment) pyenv is not installed'
 		"pyenv allows you to install new python versions very easily"
 		"unfortunately there are some gotchas when using on OSX/Apple Silicon, let's get it setup correctly"
-		""
-		'$ git clone https://github.com/pyenv/pyenv.git ~/.pyenv'
-		'$ cd ~/.pyenv && src/configure && make -C src'
-		""
+		"${_r}"
+		"$(_cmd git clone https://github.com/pyenv/pyenv.git ~/.pyenv)"
+		"$(_cmd 'cd ~/.pyenv && src/configure && make -C src')"
+		"${_prompt}"
 		"this should be a quick install - pyenv is purely shell scripts"
 		"make sure pyenv python presets are configured (end with Ctrl-D):"
-		""
-		'$ cat >> .zshrc'
-		'export PATH="$PATH:/Users/$USER/.local/bin"'
-		'export PYENV_ROOT="$HOME/.pyenv"'
-		'export PATH="$PYENV_ROOT/bin:$PATH"'
-		'eval "$(pyenv init --path)"'
-		'eval "$(pyenv init -)"'
-		""
+		"${_r}"
+		"$(_cmd "cat >> .zshrc \nexport PATH=\"\$PATH:/Users/\$USER/.local/bin\"\nexport PYENV_ROOT=\"\$HOME/.pyenv\"\nexport PATH=\"\$PYENV_ROOT/bin:\$PATH\"\neval \"\$(pyenv init --path)\"\neval \"\$(pyenv init -)\"")"
+		"${_prompt}"
 		'now refresh your shell (or close and start a new one)'
+		"${_r}"
+		"$(_cmd source ~/.zshrc)"
+		"$(_cmd pyenv versions)"
+		"$(_out '* system (set by /Users/jklapacz/.pyenv/version)')"
 		""
-		'$ source ~/.zshrc'
-		'$ pyenv versions'
-		'* system (set by /Users/jklapacz/.pyenv/version)'
 	)
 	printf '%s\n' "${message[@]}"
 }
 
 function install-03-python-394() {
 	message=(
-	"we can now install python 3.9.4"
-	"this is expected to be seamless"
-	""
-	'$ pyenv install 3.9.4'
-	"...lots of output maybe..."
-	'$ pyenv versions'
-	'* system (set by /Users/jklapacz/.pyenv/version)'
-	'3.9.4'
+		"${_prompt}"
+		"we can now install python 3.9.4"
+		"this is expected to be seamless"
+		"${_r}"
+		"$(_cmd pyenv install 3.9.4)"
+		"$(_out '...lots of output maybe...')"
+		"$(_cmd pyenv versions)"
+		"$(_out '* system (set by /Users/jklapacz/.pyenv/version)')"
+		"$(_out '3.9.4')"
+		""
 	)
 	printf '%s\n' "${message[@]}"
 }
@@ -107,28 +131,15 @@ function install-03-python-394() {
 
 function install-04-python-27() {
 	message=(
-	"we can now install python 2.7.18"
-	"this is expected to be seamless"
+	"${_prompt}we can now install python 2.7.18"
+	"this is expected to be seamless${_r}"
 	""
-	'$ pyenv install 2.7.18'
-	"...lots of output maybe..."
-	'$ pyenv versions'
-	'* system (set by /Users/jklapacz/.pyenv/version)'
-	'2.7.18'
-	'3.9.4'
-	)
-	printf '%s\n' "${message[@]}"
-}
-
-function install-05-tricky-dependencies() {
-	message=(
-	''
-	'$ mkdir -p /tmp/py2 && cd /tmp/py2 && pyenv local 2.7.18'
-	'$ python -m pip install cryptography'
-	'$ python -m pip install psycopg2'
-	'$ mkdir -p /tmp/py3 && cd /tmp/py3 && pyenv local 3.9.4'
-	'$ python -m pip install cryptography'
-	'$ python -m pip install psycopg2'
+	"$(_cmd pyenv install 2.7.18)"
+	"$(_out '...lots of output maybe...')"
+	"$(_cmd pyenv versions)"
+	"$(_out '* system (set by /Users/jklapacz/.pyenv/version)')"
+	"$(_out '3.9.4')"
+	"$(_out '2.7.18')"
 	""
 	)
 	printf '%s\n' "${message[@]}"
@@ -153,10 +164,35 @@ function verify-installation() {
 	done
 }
 
+welcome
+
+echo -n "Continue? (y)? "
+read answer
+
 install-00-prereqs
+
+echo -n "Continue? (y)? "
+read answer
+
 install-01-python-build-dependencies
+
+echo -n "Continue? (y)? "
+read answer
+
 install-02-pyenv-install
+
+echo -n "Continue? (y)? "
+read answer
+
 install-03-python-394
+
+echo -n "Continue? (y)? "
+read answer
+
 install-04-python-27
-install-05-tricky-dependencies
-verify-installation
+
+echo -n "Continue? (y)? "
+read answer
+
+#install-05-tricky-dependencies
+#verify-installation
